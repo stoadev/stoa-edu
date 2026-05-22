@@ -1,5 +1,97 @@
 # Messages
 
+## [#010] Coder → Manager | 2026-05-22 15:25 | status: done
+✓ 13 dosya oluşturuldu/güncellendi:
+
+**Routes (9 adet):**
+- `src/routes/Home.tsx`
+- `src/routes/Courses.tsx`
+- `src/routes/CourseDetail.tsx`
+- `src/routes/Categories.tsx`
+- `src/routes/Cart.tsx`
+- `src/routes/Checkout.tsx`
+- `src/routes/Login.tsx`
+- `src/routes/Register.tsx`
+- `src/routes/NotFound.tsx`
+
+**Layout (3 adet):**
+- `src/components/layout/Navbar.tsx`
+- `src/components/layout/Footer.tsx`
+- `src/components/layout/Layout.tsx`
+
+**Güncellenen:**
+- `src/App.tsx` — BrowserRouter + Routes setup
+
+---
+
+## [#009] Manager → Coder | 2026-05-22 15:20 | status: done
+
+**Brief:** Routing iskeleti + Layout. `react-router-dom` zaten kuruldu.
+
+**Yapılacaklar:**
+
+1. **`src/routes/` klasörü** altında şu boş sayfa component'lerini oluştur (her biri sadece bir `<h1>` ile sayfa adını gösteren basit fonksiyonel component, TS):
+   - `Home.tsx`
+   - `Courses.tsx`
+   - `CourseDetail.tsx`
+   - `Categories.tsx`
+   - `Cart.tsx`
+   - `Checkout.tsx`
+   - `Login.tsx`
+   - `Register.tsx`
+   - `NotFound.tsx`
+
+2. **`src/components/layout/`** altında:
+   - `Navbar.tsx` — Sol: logo (`stoaedu`, `<Link to="/">`). Orta/sağ: `Kurslar` (`/courses`), `Kategoriler` (`/categories`), Sepet ikonu (`/cart`), `Giriş` (`/login`), `Kayıt Ol` (`/register`). Tailwind ile sade, modern stil — `bg-white border-b sticky top-0 z-50`, container'lı.
+   - `Footer.tsx` — Basit: copyright (`© 2026 stoaedu`), ortalı, `bg-gray-50 border-t py-6`.
+   - `Layout.tsx` — `<div className="min-h-screen flex flex-col">` içinde `<Navbar />`, `<main className="flex-1"><Outlet /></main>`, `<Footer />`.
+
+3. **`src/App.tsx`** — Mevcut içeriği tamamen değiştir, react-router setup'ı:
+   ```tsx
+   import { BrowserRouter, Routes, Route } from 'react-router-dom'
+   import Layout from './components/layout/Layout'
+   import Home from './routes/Home'
+   import Courses from './routes/Courses'
+   import CourseDetail from './routes/CourseDetail'
+   import Categories from './routes/Categories'
+   import Cart from './routes/Cart'
+   import Checkout from './routes/Checkout'
+   import Login from './routes/Login'
+   import Register from './routes/Register'
+   import NotFound from './routes/NotFound'
+
+   function App() {
+     return (
+       <BrowserRouter>
+         <Routes>
+           <Route element={<Layout />}>
+             <Route path="/" element={<Home />} />
+             <Route path="/courses" element={<Courses />} />
+             <Route path="/courses/:slug" element={<CourseDetail />} />
+             <Route path="/categories" element={<Categories />} />
+             <Route path="/cart" element={<Cart />} />
+             <Route path="/checkout" element={<Checkout />} />
+             <Route path="/login" element={<Login />} />
+             <Route path="/register" element={<Register />} />
+             <Route path="*" element={<NotFound />} />
+           </Route>
+         </Routes>
+       </BrowserRouter>
+     )
+   }
+
+   export default App
+   ```
+
+**Notlar:**
+- Sepet ikonu için inline SVG kullan (paket kurma), sade bir cart ikonu.
+- Sayfa içerikleri tek `<h1>` yeterli, başka şey ekleme.
+- Logo metni: `stoaedu` (bitişik, küçük harf), `text-2xl font-bold`.
+
+**Çıktı:** Hangi dosyaları oluşturduğunu listele, kullanıcı `npm run dev` ile gezecek.
+
+---
+
 ## [#008] Coder → Manager | 2026-05-22 15:05 | status: done
 ✓ 3 dosyaya dokunuldu:
 - `src/lib/supabase.ts` — oluşturuldu
