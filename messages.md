@@ -1,5 +1,129 @@
 # Messages
 
+## [#022] Coder → Manager | 2026-05-22 19:10 | status: done
+✓ 5 dosya oluşturuldu/güncellendi:
+
+**Yeni:**
+- `src/types/course.ts` — `Category`, `Course`, `CourseWithCategory` tipleri
+- `src/lib/queryClient.ts` — `QueryClient` instance
+- `src/lib/queries/courses.ts` — `useCourses` hook
+
+**Güncellendi:**
+- `src/main.tsx` — `<QueryClientProvider>` eklendi
+- `src/routes/Courses.tsx` — grid liste, loading/error/empty state, para formatı
+
+---
+
+## [#021] Manager → Coder | 2026-05-22 19:00 | status: done
+
+**Brief:** Faz 2.2 — TanStack Query setup + Kurs liste sayfası.
+
+**Bağlam:**
+- `@tanstack/react-query` zaten kuruldu
+- DB tarafında `stoaedu_categories` ve `stoaedu_courses` tabloları seed data ile dolu
+- RLS public select izin veriyor (`is_published = true` olanlar)
+
+**Yapılacaklar:**
+
+### 1. `src/types/course.ts` (yeni)
+```ts
+export interface Category {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  created_at: string
+}
+
+export interface Course {
+  id: string
+  slug: string
+  title: string
+  description: string | null
+  thumbnail_url: string | null
+  price: number
+  currency: string
+  category_id: string | null
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface CourseWithCategory extends Course {
+  category: Pick<Category, 'id' | 'slug' | 'name'> | null
+}
+```
+
+### 2. `src/lib/queryClient.ts` (yeni)
+```ts
+import { QueryClient } from '@tanstack/react-query'
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+```
+
+### 3. `src/main.tsx` — QueryClientProvider ile sar
+Mevcut yapıyı KORU. `<AuthProvider>`'in DIŞINA `<QueryClientProvider client={queryClient}>` ekle. Yani:
+```tsx
+<QueryClientProvider client={queryClient}>
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+</QueryClientProvider>
+```
+
+### 4. `src/lib/queries/courses.ts` (yeni)
+```ts
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../supabase'
+import type { CourseWithCategory } from '../../types/course'
+
+export function useCourses() {
+  return useQuery({
+    queryKey: ['courses'],
+    queryFn: async (): Promise<CourseWithCategory[]> => {
+      const { data, error } = await supabase
+        .from('stoaedu_courses')
+        .select('*, category:stoaedu_categories(id, slug, name)')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data as CourseWithCategory[]
+    },
+  })
+}
+```
+
+### 5. `src/routes/Courses.tsx` — Liste sayfası (mevcut h1'i değiştir)
+- `useCourses()` ile veri çek
+- Loading: "Yükleniyor..." (sade)
+- Error: kırmızı mesaj
+- Empty: "Henüz kurs eklenmemiş."
+- Liste: grid (responsive: 1 / 2 / 3 / 4 kolon), her kursu Card olarak göster:
+  - Thumbnail (16:9 oran, `object-cover`)
+  - Title (font-semibold)
+  - Kategori adı (text-xs, gray-500)
+  - Fiyat (örn. "499,00 ₺", `Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' })`)
+  - Tüm kart `<Link to={`/courses/${slug}`}>` ile sarılı
+- Container: `max-w-7xl mx-auto px-4 py-8`
+- Header: "Tüm Kurslar" başlığı
+- Tailwind ile sade kart: `border rounded-lg overflow-hidden hover:shadow-md transition`
+
+**Notlar:**
+- Para formatı için `Intl.NumberFormat`, paket kurma
+- Empty/error/loading state'leri SADE, Faz 2.5'te cilalanacak
+- TS strict, tipler `types/course.ts`'ten import
+
+**Çıktı:** Hangi dosyaları oluşturduğun/değiştirdiğini listele.
+
+---
+
 ## [#020] Coder → Manager | 2026-05-22 18:05 | status: done
 ✓ 3 dosya oluşturuldu/güncellendi:
 
