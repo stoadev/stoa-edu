@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { LogIn, Mail, Lock, Loader2, AlertCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/Button'
 
@@ -18,52 +18,92 @@ export default function Login() {
     setSubmitting(true)
     const { error } = await signIn(email, password)
     setSubmitting(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      navigate('/courses')
-    }
+    if (error) setError(error.message)
+    else navigate('/courses')
   }
 
   return (
-    <div className="max-w-md mx-auto my-12 px-4">
-      <h1 className="text-2xl font-bold mb-6">Giriş Yap</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="email"
-          placeholder="E-posta"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          className="border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
-        />
-        <input
-          type="password"
-          placeholder="Şifre"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="current-password"
-          className="border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
-        />
-        {error && (
-          <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p aria-live="polite">{error}</p>
+    <section className="relative w-full overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-12 md:min-h-[calc(100vh-64px)]">
+        {/* Sol: görsel */}
+        <div className="hidden md:block md:col-span-6">
+          <img
+            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&h=1200&fit=crop&auto=format"
+            alt=""
+            width={1600}
+            height={1200}
+            loading="eager"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
+        </div>
+
+        {/* Sağ: form */}
+        <div className="flex w-full items-center justify-center px-6 py-12 md:col-span-6 md:px-10">
+          <div className="w-full max-w-sm bg-gradient-to-b from-brand-50/50 to-white rounded-3xl shadow-xl p-8 flex flex-col items-center border border-brand-100">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-white mb-6 shadow-lg">
+              <LogIn className="w-7 h-7 text-gray-900" />
+            </div>
+            <h1 className="text-2xl font-semibold mb-2 text-center text-gray-900">Oturum aç</h1>
+            <p className="text-gray-500 text-sm mb-6 text-center">
+              Hesabına giriş yap ve öğrenmeye kaldığın yerden devam et.
+            </p>
+
+            <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="email"
+                  placeholder="E-posta"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  required
+                  className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-gray-50 text-sm"
+                />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="password"
+                  placeholder="Şifre"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                  minLength={6}
+                  className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-gray-50 text-sm"
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  <p aria-live="polite">{error}</p>
+                </div>
+              )}
+
+              <Button type="submit" disabled={submitting} className="w-full mt-2">
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Giriş yapılıyor...
+                  </>
+                ) : (
+                  'Oturum aç'
+                )}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-sm text-gray-500">
+              Hesabın yok mu?{' '}
+              <Link to="/register" className="text-brand-700 font-medium hover:underline">
+                Kayıt ol
+              </Link>
+            </p>
           </div>
-        )}
-        <Button type="submit" disabled={submitting} className="w-full">
-          {submitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Giriş yapılıyor...
-            </>
-          ) : (
-            'Giriş Yap'
-          )}
-        </Button>
-      </form>
-    </div>
+        </div>
+      </div>
+    </section>
   )
 }

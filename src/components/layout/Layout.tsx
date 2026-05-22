@@ -4,7 +4,7 @@ import Footer from './Footer'
 
 export default function Layout() {
   const location = useLocation()
-  const hideFooter = location.pathname === '/'
+  const hideFooter = ['/', '/login', '/register'].includes(location.pathname)
 
   return (
     <div className="min-h-screen flex flex-col">
