@@ -67,14 +67,18 @@ export default function Courses() {
                 <Link
                   key={course.id}
                   to={`/courses/${course.slug}`}
-                  className="border rounded-lg overflow-hidden hover:shadow-md transition"
+                  className="group border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
                   {course.thumbnail_url && (
                     <div className="aspect-video bg-gray-100">
                       <img
                         src={course.thumbnail_url}
                         alt={course.title}
-                        className="w-full h-full object-cover"
+                        width={600}
+                        height={400}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                   )}
