@@ -15,11 +15,11 @@ Udemy benzeri online eğitim ve e-ticaret platformu. Kurslar, kategoriler, sepet
 
 ## Roller ve Erişim
 
-| Rol | Açıklama |
-|---|---|
-| `visitor` | Giriş yapmamış kullanıcı |
+| Rol       | Açıklama                                |
+| --------- | --------------------------------------- |
+| `visitor` | Giriş yapmamış kullanıcı                |
 | `student` | Kayıtlı, satın alma yapabilen kullanıcı |
-| `admin` | Tüm yönetim yetkisine sahip kullanıcı |
+| `admin`   | Tüm yönetim yetkisine sahip kullanıcı   |
 
 Rol ayrımı `profiles.role` alanı ve RLS politikaları ile yapılır.
 

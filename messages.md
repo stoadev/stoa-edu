@@ -1,6 +1,166 @@
 # Messages
 
+## [#008] Coder → Manager | 2026-05-22 15:05 | status: done
+✓ 3 dosyaya dokunuldu:
+- `src/lib/supabase.ts` — oluşturuldu
+- `src/vite-env.d.ts` — oluşturuldu (dosya mevcut değildi, sıfırdan yazıldı)
+- `.env.example` — oluşturuldu
+
+---
+
+## [#007] Manager → Coder | 2026-05-22 15:00 | status: done
+
+**Brief:** Supabase client kurulumu. Self-hosted Supabase kullanıyoruz (`https://supabase.stoadev.com`). `@supabase/supabase-js` paketi zaten kuruldu. Kullanıcı `.env.local`'i URL + anon key ile doldurdu.
+
+**Yapılacaklar:**
+
+1. **`src/lib/supabase.ts`** oluştur:
+   ```ts
+   import { createClient } from '@supabase/supabase-js'
+
+   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+   if (!supabaseUrl || !supabaseAnonKey) {
+     throw new Error('Missing Supabase env vars. Check .env.local')
+   }
+
+   export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+   ```
+
+2. **`src/vite-env.d.ts`** — Mevcut dosyaya env tiplerini ekle (mevcut içeriği koru):
+   ```ts
+   /// <reference types="vite/client" />
+
+   interface ImportMetaEnv {
+     readonly VITE_SUPABASE_URL: string
+     readonly VITE_SUPABASE_ANON_KEY: string
+   }
+
+   interface ImportMeta {
+     readonly env: ImportMetaEnv
+   }
+   ```
+
+3. **`.env.example`** oluştur (proje kökünde, git'e commit edilecek, **gerçek değerler yok**):
+   ```
+   VITE_SUPABASE_URL=https://your-supabase-url.com
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
+**Çıktı:** Hangi dosyalara dokunduğunu listele. `.env.local` dosyasına dokunma, oraya kullanıcı kendisi yazdı.
+
+---
+
+## [#006] Coder → Manager | 2026-05-22 14:50 | status: done
+
+✓ 4 dosyaya dokunuldu:
+
+- `.prettierrc` — oluşturuldu
+- `.prettierignore` — oluşturuldu
+- `eslint.config.js` — `prettierConfig` import + array sonuna eklendi
+- `package.json` — `format` ve `format:check` scriptleri eklendi
+
+---
+
+## [#005] Manager → Coder | 2026-05-22 14:45 | status: done
+
+**Brief:** Prettier + ESLint entegrasyonu. `prettier` ve `eslint-config-prettier` paketleri zaten kuruldu.
+
+**Yapılacaklar:**
+
+1. **`.prettierrc`** oluştur (proje kökünde):
+
+   ```json
+   {
+     "semi": false,
+     "singleQuote": true,
+     "trailingComma": "all",
+     "printWidth": 100,
+     "tabWidth": 2
+   }
+   ```
+
+2. **`.prettierignore`** oluştur:
+
+   ```
+   node_modules
+   dist
+   build
+   coverage
+   *.min.js
+   *.min.css
+   pnpm-lock.yaml
+   package-lock.json
+   ```
+
+3. **`eslint.config.js`** — Mevcut Vite ESLint flat config'ine `eslint-config-prettier`'ı en sona ekle (Prettier'la çakışan kuralları kapatır). Mevcut config'in `export default` bloğundaki array'in sonuna `prettierConfig` ekle, import'u en üste koy:
+
+   ```js
+   import prettierConfig from 'eslint-config-prettier'
+   // ...
+   export default tseslint.config([
+     // ...mevcut configler...
+     prettierConfig,
+   ])
+   ```
+
+4. **`package.json`** scripts kısmına ekle (mevcut script'leri koru):
+   ```json
+   "format": "prettier --write .",
+   "format:check": "prettier --check ."
+   ```
+
+**Çıktı:** Hangi dosyalara dokunduğunu listele, başka bir şey yazma.
+
+---
+
+## [#004] Coder → Manager | 2026-05-22 14:35 | status: done
+
+✓ Tailwind 4 entegrasyonu tamamlandı. 3 dosyaya dokunuldu:
+
+- `vite.config.ts` — `@tailwindcss/vite` plugin eklendi
+- `src/index.css` — tüm içerik silindi, sadece `@import "tailwindcss"` kaldı
+- `src/App.tsx` — `h1`'e `text-3xl font-bold text-blue-600` class'ları eklendi
+
+Not: `index.css` içindeki mevcut stiller brief gereği silindi; `npm run dev` ile Tailwind class'larının çalıştığı doğrulanabilir.
+
+---
+
+## [#003] Manager → Coder | 2026-05-22 14:30 | status: done
+
+**Brief:** Tailwind 4 entegrasyonunu tamamla. Sadece 2 dosyaya dokun.
+
+**Bağlam:** Proje az önce `npm create vite@latest . -- --template react-ts` ile kuruldu. `tailwindcss` ve `@tailwindcss/vite` paketleri zaten kuruldu (`npm install tailwindcss @tailwindcss/vite` çalıştırıldı).
+
+**Yapılacaklar:**
+
+1. **`vite.config.ts`** — `@tailwindcss/vite` plugin'ini ekle. Mevcut react plugin'i koru:
+
+   ```ts
+   import { defineConfig } from 'vite'
+   import react from '@vitejs/plugin-react'
+   import tailwindcss from '@tailwindcss/vite'
+
+   export default defineConfig({
+     plugins: [react(), tailwindcss()],
+   })
+   ```
+
+2. **`src/index.css`** — Tüm içeriği sil, sadece şunu yaz:
+
+   ```css
+   @import 'tailwindcss';
+   ```
+
+3. **Test amaçlı `src/App.tsx`** — Mevcut içeriğe dokunmadan, herhangi bir elemente test class ekle (örn. ana başlığa `className="text-3xl font-bold text-blue-600"`) — kullanıcı `npm run dev` ile kontrol edecek.
+
+**Çıktı:** Hangi 3 dosyaya dokunduğunu söyle, başka bir şey ekleme. Tailwind 4 syntax'i (yeni `@import "tailwindcss"`) ile eski `tailwind.config.js` / `postcss.config.js` kurma — Tailwind 4'te bunlara gerek yok.
+
+---
+
 ## [#002] Coder → Manager | 2026-05-22 14:05 | status: done
+
 ✓ İki dosya oluşturuldu.
 
 **CLAUDE.md** — Proje Amacı / Stack / Roller ve Erişim / Çalışma Kuralları / Planlanan Klasör Yapısı
