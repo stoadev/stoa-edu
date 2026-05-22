@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 
 function CartIcon() {
   return (
@@ -21,6 +22,14 @@ function CartIcon() {
 }
 
 export default function Navbar() {
+  const { user, profile, loading, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleSignOut() {
+    await signOut()
+    navigate('/')
+  }
+
   return (
     <nav className="bg-white border-b sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -37,18 +46,35 @@ export default function Navbar() {
           <Link to="/cart" className="text-gray-600 hover:text-gray-900">
             <CartIcon />
           </Link>
-          <Link
-            to="/login"
-            className="text-sm text-gray-600 hover:text-gray-900"
-          >
-            Giriş
-          </Link>
-          <Link
-            to="/register"
-            className="text-sm bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700"
-          >
-            Kayıt Ol
-          </Link>
+          {!loading && (
+            <>
+              {user ? (
+                <>
+                  <span className="text-sm text-gray-600">
+                    {profile?.full_name ?? user.email}
+                  </span>
+                  <button
+                    onClick={handleSignOut}
+                    className="text-sm bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700"
+                  >
+                    Çıkış
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">
+                    Giriş
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="text-sm bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700"
+                  >
+                    Kayıt Ol
+                  </Link>
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
     </nav>

@@ -1,5 +1,291 @@
 # Messages
 
+## [#020] Coder → Manager | 2026-05-22 18:05 | status: done
+✓ 3 dosya oluşturuldu/güncellendi:
+
+**Yeni:**
+- `src/components/guards/ProtectedRoute.tsx`
+- `src/components/guards/RedirectIfAuthenticated.tsx`
+
+**Güncellendi:**
+- `src/App.tsx` — guard'lar route yapısına eklendi
+
+---
+
+## [#019] Manager → Coder | 2026-05-22 18:00 | status: done
+
+**Brief:** Faz 1.4 — ProtectedRoute + RedirectIfAuthenticated guard'ları + App.tsx'te uygula.
+
+**Bağlam:**
+- `useAuth()` hook'unda `user`, `profile`, `loading` var
+- `loading: true` ise auth durumu daha bilinmiyor → bekleme göster
+- `user: null` ise login yok
+- `profile.role` ile rol kontrolü yapılır
+
+**Yapılacaklar:**
+
+### 1. `src/components/guards/ProtectedRoute.tsx` (yeni)
+
+Login gerektiren route'ları sarar. Opsiyonel `requireRole` prop'u ile rol kontrolü.
+
+```tsx
+import { Navigate, Outlet } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import type { Role } from '../../types/profile'
+
+interface Props {
+  requireRole?: Role
+}
+
+export default function ProtectedRoute({ requireRole }: Props) {
+  const { user, profile, loading } = useAuth()
+
+  if (loading) {
+    return <div className="text-center py-12 text-sm text-gray-500">Yükleniyor...</div>
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (requireRole && profile?.role !== requireRole) {
+    return <Navigate to="/" replace />
+  }
+
+  return <Outlet />
+}
+```
+
+### 2. `src/components/guards/RedirectIfAuthenticated.tsx` (yeni)
+
+Login olanları login/register sayfalarından `/`'a yönlendirir.
+
+```tsx
+import { Navigate, Outlet } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+
+export default function RedirectIfAuthenticated() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return <div className="text-center py-12 text-sm text-gray-500">Yükleniyor...</div>
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />
+  }
+
+  return <Outlet />
+}
+```
+
+### 3. `src/App.tsx` — Route'ları guard'larla sar
+
+Mevcut route yapısını şöyle güncelle (Layout içinde):
+
+```tsx
+<Route element={<Layout />}>
+  {/* Public */}
+  <Route path="/" element={<Home />} />
+  <Route path="/courses" element={<Courses />} />
+  <Route path="/courses/:slug" element={<CourseDetail />} />
+  <Route path="/categories" element={<Categories />} />
+  <Route path="/cart" element={<Cart />} />
+
+  {/* Auth gerektirmiyor ama login varsa anasayfaya yönlenir */}
+  <Route element={<RedirectIfAuthenticated />}>
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
+  </Route>
+
+  {/* Login gerekir */}
+  <Route element={<ProtectedRoute />}>
+    <Route path="/checkout" element={<Checkout />} />
+  </Route>
+
+  <Route path="*" element={<NotFound />} />
+</Route>
+```
+
+İmport ekle:
+```tsx
+import ProtectedRoute from './components/guards/ProtectedRoute'
+import RedirectIfAuthenticated from './components/guards/RedirectIfAuthenticated'
+```
+
+**Çıktı:** Hangi dosyaları oluşturduğun/güncellediğini listele.
+
+---
+
+## [#018] Coder → Manager | 2026-05-22 17:32 | status: done
+✓ `src/contexts/AuthContext.tsx` güncellendi — `onAuthStateChange` callback `async` kaldırıldı, `await` yerine `.then(setProfile)` kullanıldı.
+
+---
+
+## [#017] Manager → Coder | 2026-05-22 17:30 | status: done
+
+**Brief:** `AuthContext.tsx` deadlock fix. Supabase JS'in bilinen bug'ı — `onAuthStateChange` callback'i içinde `await supabase.from(...)` çağrılırsa auth lock release olmadığı için deadlock yapıyor, profile fetch hiç başlamıyor.
+
+**Bağlam:**
+- Şu an register başarılı (DB'ye user ekleniyor, signup 200 dönüyor)
+- Ama frontend "Kaydediliyor..." state'inde takılıyor
+- Network'te `stoaedu_profiles` GET hiç başlamıyor (deadlock)
+
+**Yapılacak (tek dosya):**
+
+**`src/contexts/AuthContext.tsx`** — `onAuthStateChange` callback'ini SYNC yap, fetchProfile'ı `.then()` ile defer et. Sadece o callback'i değiştir, başka yere dokunma.
+
+Mevcut hatalı kısım (satır 41-48):
+```ts
+const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+  setUser(session?.user ?? null)
+  if (session?.user) {
+    setProfile(await fetchProfile(session.user.id))
+  } else {
+    setProfile(null)
+  }
+})
+```
+
+Yeni hali:
+```ts
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  setUser(session?.user ?? null)
+  if (session?.user) {
+    fetchProfile(session.user.id).then(setProfile)
+  } else {
+    setProfile(null)
+  }
+})
+```
+
+Değişiklikler:
+1. `async` kaldırıldı
+2. `await` yerine `.then(setProfile)` kullanıldı
+
+**Not:** `getSession()` blokundaki (satır 33-39) await'lerin sorun değil, orası mount'ta bir kere çalışıyor. Sadece `onAuthStateChange` callback'i sync olmalı.
+
+**Çıktı:** Dosya güncellendi de.
+
+---
+
+## [#016] Coder → Manager | 2026-05-22 17:10 | status: done
+✓ 6 dosya oluşturuldu/güncellendi:
+
+**Yeni:**
+- `src/types/profile.ts` — `Role`, `Profile` tipleri
+- `src/contexts/AuthContext.tsx` — `AuthProvider`, `useAuth` hook
+
+**Güncellendi:**
+- `src/main.tsx` — `<AuthProvider>` ile App sarıldı
+- `src/routes/Register.tsx` — form + signUp + yönlendirme
+- `src/routes/Login.tsx` — form + signIn + yönlendirme
+- `src/components/layout/Navbar.tsx` — conditional auth UI
+
+---
+
+## [#015] Manager → Coder | 2026-05-22 17:00 | status: done
+
+**Brief:** Faz 1.1 — Auth UI (Register / Login / Logout) + Auth Context. Supabase client zaten kurulu (`src/lib/supabase.ts`).
+
+**Bağlam:**
+- DB tarafında `stoaedu_profiles` tablosu + app-aware trigger zaten var
+- Kayıt sırasında `raw_user_meta_data`'ya `app: 'stoaedu'` koyacağız ki trigger doğru tabloya yazsın
+- 3 rol var: `visitor` (login yok), `student` (default), `admin`. Frontend'de `role` field'ı `stoaedu_profiles`'tan okunur.
+- Tasarım sade tut — Tailwind ile minimal stil. Detay tasarım Faz 2.5'te.
+
+---
+
+**Yapılacaklar:**
+
+### 1. `src/types/profile.ts` (yeni)
+```ts
+export type Role = 'student' | 'admin'
+
+export interface Profile {
+  id: string
+  email: string
+  full_name: string | null
+  role: Role
+  created_at: string
+  updated_at: string
+}
+```
+
+### 2. `src/contexts/AuthContext.tsx` (yeni)
+- `User` ve `Profile` state'i tut
+- Mount'ta `supabase.auth.getSession()` ile mevcut session'ı çek
+- `supabase.auth.onAuthStateChange` ile değişiklikleri dinle
+- User varsa `stoaedu_profiles`'tan profili çek
+- Export: `useAuth()` hook ile `{ user, profile, loading, signUp, signIn, signOut }` döner
+
+Önemli: `signUp` fonksiyonu metadata'ya `app: 'stoaedu'` ve `full_name` koyar:
+```ts
+const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: { data: { app: 'stoaedu', full_name: fullName } }
+})
+```
+
+### 3. `src/main.tsx` — `<AuthProvider>` ile App'i sar
+Mevcut yapıyı koru, sadece `<App />`'i `<AuthProvider>` ile sar.
+
+### 4. `src/routes/Register.tsx` — Mevcut h1'i değiştir, form ekle
+- Field'lar: full_name, email, password (min 6 karakter)
+- Submit → `signUp()` çağır
+- Başarılı → `/courses`'a yönlendir
+- Hata → form altında kırmızı mesaj
+- Tailwind: max-w-md, mx-auto, my-12, basit input/button stilleri
+
+### 5. `src/routes/Login.tsx` — Aynı şekilde
+- Field'lar: email, password
+- Submit → `signIn()` çağır
+- Başarılı → `/courses`'a yönlendir
+- Hata gösterimi aynı
+
+### 6. `src/components/layout/Navbar.tsx` — Conditional UI
+- `useAuth()` kullan
+- Login değilse: mevcut "Giriş" / "Kayıt Ol" linkleri görünür
+- Login ise: kullanıcının email/ad'ı görünür + "Çıkış" butonu (signOut çağırır + `/`'a yönlendirir)
+- `loading` durumunda butonları gösterme (boş bırak)
+
+---
+
+**Notlar:**
+- Form state için ek paket KURMA, basit `useState` yeterli
+- Email doğrulama Supabase tarafında zaten var, email confirmation kapalı varsayalım (Studio'da Auth settings)
+- `react-router-dom`'dan `useNavigate` kullan yönlendirme için
+- Component tipleri `Profile`, `Role` `types/profile.ts`'ten import edilsin
+- Server-side error mesajlarını olduğu gibi göster (Supabase Türkçe değil, sorun değil şu an)
+
+**Çıktı:** Hangi dosyaları oluşturduğun/değiştirdiğini listele.
+
+---
+
+## [#014] Coder → Manager | 2026-05-22 16:22 | status: done
+✓ `nixpacks.toml` oluşturuldu.
+
+---
+
+## [#013] Manager → Coder | 2026-05-22 16:20 | status: done
+
+**Brief:** Coolify/Nixpacks `npm ci` → `npm install` override. Tek dosya.
+
+**Bağlam:** Coolify "Static" modunda altta Nixpacks kullanıyor ve default `npm ci` çalıştırıyor. Vite 8 Rolldown native binding'i lockfile bug'ı yüzünden Linux'ta `npm ci` ile kurulmuyor. `npm install` ile çözülüyor.
+
+**Yapılacaklar:**
+
+1. Proje kökünde **`nixpacks.toml`** oluştur, içerik:
+   ```toml
+   [phases.install]
+   cmds = ['npm install']
+   ```
+
+**Çıktı:** Dosya oluşturuldu de, başka bir şey yazma.
+
+---
+
 ## [#012] Coder → Manager | 2026-05-22 16:05 | status: done
 ✓ 2 dosyaya dokunuldu:
 - `package.json` — `engines.node: ">=22.12.0"` eklendi
