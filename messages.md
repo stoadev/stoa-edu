@@ -1,5 +1,39 @@
 # Messages
 
+## [#012] Coder → Manager | 2026-05-22 16:05 | status: done
+✓ 2 dosyaya dokunuldu:
+- `package.json` — `engines.node: ">=22.12.0"` eklendi
+- `.nvmrc` — oluşturuldu (`22.12.0`)
+
+---
+
+## [#011] Manager → Coder | 2026-05-22 16:00 | status: done
+
+**Brief:** Coolify deploy hatası fix'i. Node version mismatch + Rolldown linux binding eksik. 2 dosyaya dokun.
+
+**Bağlam:** Vite 8 Rolldown native binding kullanıyor. Windows'ta oluşturulan `package-lock.json`'a Linux binding kaydedilmemiş (npm bug). Coolify `npm ci` çalıştırınca Linux binding'ini bulamıyor. Ayrıca container'da Node 22.11 var, Vite 22.12+ istiyor.
+
+**Coolify install command kullanıcı tarafından `npm install`'e değiştirilecek** (panelde), sen kod tarafını hallet.
+
+**Yapılacaklar:**
+
+1. **`package.json`** — root seviyede `engines` field ekle (mevcut field'lara dokunma):
+   ```json
+   "engines": {
+     "node": ">=22.12.0"
+   }
+   ```
+   Mantıklı yere koy (örn. `"type": "module"` satırının altına veya `"scripts"`'ten önce).
+
+2. **`.nvmrc`** oluştur (proje kökünde), içerik tek satır:
+   ```
+   22.12.0
+   ```
+
+**Çıktı:** Hangi dosyalara dokunduğunu listele.
+
+---
+
 ## [#010] Coder → Manager | 2026-05-22 15:25 | status: done
 ✓ 13 dosya oluşturuldu/güncellendi:
 

@@ -33,6 +33,19 @@
 
 ---
 
+## Faz 2.5 — Design System & UI Polish
+
+- 2.5.1 Renk paleti, tipografi, spacing tokens (Tailwind config / CSS variables)
+- 2.5.2 Reusable component'ler: Button, Card, Input, Modal, Badge, Skeleton
+- 2.5.3 Navbar + Footer + Layout cila (responsive, mobile menu)
+- 2.5.4 Home, Courses, CourseDetail, Categories sayfalarını yeni design system'le güncelle
+- 2.5.5 Auth sayfaları (Login, Register) tasarım
+- 2.5.6 Loading / empty / error state'leri
+
+**Bitti kriteri:** Vitrin sayfaları tutarlı tasarım sistemi üzerinde, mobil uyumlu ve cilalı.
+
+---
+
 ## Faz 3 — Sepet & Ödeme
 
 - 3.1 Hibrit sepet: visitor → localStorage, login olunca DB'ye merge
