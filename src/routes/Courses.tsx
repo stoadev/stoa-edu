@@ -1,52 +1,98 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCourses } from '../lib/queries/courses'
+import { useCategories } from '../lib/queries/categories'
 
 const formatPrice = (price: number, currency: string) =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(price)
 
 export default function Courses() {
-  const { data: courses, isLoading, error } = useCourses()
+  const [search, setSearch] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const { data: categories } = useCategories()
+  const { data: courses, isLoading, isError } = useCourses({
+    search: search.trim() || undefined,
+    categoryId: selectedCategory ?? undefined,
+  })
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Tüm Kurslar</h1>
+      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8">
+        <aside>
+          <h2 className="font-semibold text-sm mb-3">Kategoriler</h2>
+          <ul className="space-y-1 text-sm">
+            <li>
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 ${
+                  selectedCategory === null ? 'bg-gray-100 font-medium' : ''
+                }`}
+              >
+                Tümü
+              </button>
+            </li>
+            {categories?.map((cat) => (
+              <li key={cat.id}>
+                <button
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 ${
+                    selectedCategory === cat.id ? 'bg-gray-100 font-medium' : ''
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </aside>
 
-      {isLoading && <p className="text-sm text-gray-500">Yükleniyor...</p>}
+        <main>
+          <h1 className="text-2xl font-bold mb-6">Tüm Kurslar</h1>
+          <input
+            type="text"
+            placeholder="Kurs ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full max-w-md border rounded px-3 py-2 text-sm mb-6 outline-none focus:ring-2 focus:ring-gray-900"
+          />
 
-      {error && <p className="text-sm text-red-600">{error.message}</p>}
-
-      {courses && courses.length === 0 && (
-        <p className="text-sm text-gray-500">Henüz kurs eklenmemiş.</p>
-      )}
-
-      {courses && courses.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {courses.map((course) => (
-            <Link
-              key={course.id}
-              to={`/courses/${course.slug}`}
-              className="border rounded-lg overflow-hidden hover:shadow-md transition"
-            >
-              <div className="aspect-video bg-gray-100">
-                {course.thumbnail_url ? (
-                  <img
-                    src={course.thumbnail_url}
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200" />
-                )}
-              </div>
-              <div className="p-4">
-                <p className="text-xs text-gray-500 mb-1">{course.category?.name ?? ''}</p>
-                <p className="font-semibold text-sm leading-snug mb-2">{course.title}</p>
-                <p className="text-sm font-medium">{formatPrice(course.price, course.currency)}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+          {isLoading && <div className="text-sm text-gray-500">Yükleniyor...</div>}
+          {isError && <div className="text-sm text-red-600">Bir hata oluştu.</div>}
+          {courses && courses.length === 0 && (
+            <div className="text-sm text-gray-500">Sonuç bulunamadı.</div>
+          )}
+          {courses && courses.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courses.map((course) => (
+                <Link
+                  key={course.id}
+                  to={`/courses/${course.slug}`}
+                  className="border rounded-lg overflow-hidden hover:shadow-md transition"
+                >
+                  {course.thumbnail_url && (
+                    <div className="aspect-video bg-gray-100">
+                      <img
+                        src={course.thumbnail_url}
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    {course.category && (
+                      <p className="text-xs text-gray-500">{course.category.name}</p>
+                    )}
+                    <h3 className="font-semibold mt-1">{course.title}</h3>
+                    <p className="text-sm mt-2 font-medium">
+                      {formatPrice(course.price, course.currency)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   )
 }

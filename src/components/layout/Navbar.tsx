@@ -40,9 +40,6 @@ export default function Navbar() {
           <Link to="/courses" className="text-sm text-gray-600 hover:text-gray-900">
             Kurslar
           </Link>
-          <Link to="/categories" className="text-sm text-gray-600 hover:text-gray-900">
-            Kategoriler
-          </Link>
           <Link to="/cart" className="text-gray-600 hover:text-gray-900">
             <CartIcon />
           </Link>

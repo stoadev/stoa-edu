@@ -1,5 +1,493 @@
 # Messages
 
+## [#028] Coder → Manager | 2026-05-22 20:18 | status: done
+✓ Yapılan değişiklikler:
+
+**Silindi:**
+- `src/routes/CategoryDetail.tsx`
+
+**Güncellendi:**
+- `src/routes/Categories.tsx` — `/courses`'a redirect
+- `src/lib/queries/categories.ts` — `useCategory` silindi, `useCategories` kaldı
+- `src/App.tsx` — `CategoryDetail` import ve route kaldırıldı
+- `src/components/layout/Navbar.tsx` — "Kategoriler" linki kaldırıldı
+- `src/routes/Courses.tsx` — sidebar kategori filtreli layout
+
+---
+
+## [#027] Manager → Coder | 2026-05-22 20:10 | status: done
+
+**Brief:** Plan değişikliği — Ayrı `/categories` sayfası yerine `/courses` sayfasında **sidebar kategori filtresi**. #025'te yapılanların bir kısmı geri alınacak.
+
+**Yapılacaklar:**
+
+### 1. SİLİNECEK dosyalar:
+- `src/routes/CategoryDetail.tsx` — sil
+
+### 2. `src/routes/Categories.tsx` — Boşalt, sadece redirect:
+```tsx
+import { Navigate } from 'react-router-dom'
+
+export default function Categories() {
+  return <Navigate to="/courses" replace />
+}
+```
+
+### 3. `src/App.tsx`:
+- `<Route path="/categories/:slug" element={<CategoryDetail />} />` route'unu KALDIR
+- `import CategoryDetail from './routes/CategoryDetail'` import'unu KALDIR
+- `<Route path="/categories" element={<Categories />} />` KALSIN (redirect için)
+
+### 4. `src/lib/queries/categories.ts`:
+- `useCategory(slug)` fonksiyonunu SİL
+- `useCategories()` KALSIN
+
+### 5. `src/components/layout/Navbar.tsx`:
+- "Kategoriler" linkini KALDIR. Yerine bir şey ekleme.
+
+### 6. `src/routes/Courses.tsx` — Sidebar filtreli layout:
+
+State:
+```tsx
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useCourses } from '../lib/queries/courses'
+import { useCategories } from '../lib/queries/categories'
+
+const formatPrice = (price: number, currency: string) =>
+  new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(price)
+
+export default function Courses() {
+  const [search, setSearch] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const { data: categories } = useCategories()
+  const { data: courses, isLoading, isError } = useCourses({
+    search: search.trim() || undefined,
+    categoryId: selectedCategory ?? undefined,
+  })
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8">
+        <aside>
+          <h2 className="font-semibold text-sm mb-3">Kategoriler</h2>
+          <ul className="space-y-1 text-sm">
+            <li>
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 ${
+                  selectedCategory === null ? 'bg-gray-100 font-medium' : ''
+                }`}
+              >
+                Tümü
+              </button>
+            </li>
+            {categories?.map((cat) => (
+              <li key={cat.id}>
+                <button
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 ${
+                    selectedCategory === cat.id ? 'bg-gray-100 font-medium' : ''
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        <main>
+          <h1 className="text-2xl font-bold mb-6">Tüm Kurslar</h1>
+          <input
+            type="text"
+            placeholder="Kurs ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full max-w-md border rounded px-3 py-2 text-sm mb-6 outline-none focus:ring-2 focus:ring-gray-900"
+          />
+
+          {isLoading && <div className="text-sm text-gray-500">Yükleniyor...</div>}
+          {isError && <div className="text-sm text-red-600">Bir hata oluştu.</div>}
+          {courses && courses.length === 0 && (
+            <div className="text-sm text-gray-500">Sonuç bulunamadı.</div>
+          )}
+          {courses && courses.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courses.map((course) => (
+                <Link
+                  key={course.id}
+                  to={`/courses/${course.slug}`}
+                  className="border rounded-lg overflow-hidden hover:shadow-md transition"
+                >
+                  {course.thumbnail_url && (
+                    <div className="aspect-video bg-gray-100">
+                      <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    {course.category && (
+                      <p className="text-xs text-gray-500">{course.category.name}</p>
+                    )}
+                    <h3 className="font-semibold mt-1">{course.title}</h3>
+                    <p className="text-sm mt-2 font-medium">{formatPrice(course.price, course.currency)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  )
+}
+```
+
+**Çıktı:** Hangi dosyaları sildiğini/güncellediğini listele.
+
+---
+
+## [#026] Coder → Manager | 2026-05-22 20:00 | status: done
+✓ 6 dosya oluşturuldu/güncellendi:
+
+**Yeni:**
+- `src/lib/queries/categories.ts` — `useCategories`, `useCategory` hook'ları
+- `src/routes/CategoryDetail.tsx` — kategori detay sayfası
+
+**Güncellendi:**
+- `src/lib/queries/courses.ts` — `useCourses` filtre desteği (`search`, `categoryId`)
+- `src/routes/Categories.tsx` — kategori listesi
+- `src/routes/Courses.tsx` — arama input'u eklendi
+- `src/App.tsx` — `/categories/:slug` route eklendi
+
+---
+
+## [#025] Manager → Coder | 2026-05-22 19:50 | status: done
+
+**Brief:** Faz 2.4 — Kategori sayfası + kategori detay (kursları listeleyen) + Courses sayfasında basit arama.
+
+**Yapılacaklar:**
+
+### 1. `src/lib/queries/categories.ts` (yeni)
+```ts
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../supabase'
+import type { Category } from '../../types/course'
+
+export function useCategories() {
+  return useQuery({
+    queryKey: ['categories'],
+    queryFn: async (): Promise<Category[]> => {
+      const { data, error } = await supabase
+        .from('stoaedu_categories')
+        .select('*')
+        .order('name', { ascending: true })
+      if (error) throw error
+      return data as Category[]
+    },
+  })
+}
+
+export function useCategory(slug: string | undefined) {
+  return useQuery({
+    queryKey: ['category', slug],
+    queryFn: async (): Promise<Category | null> => {
+      if (!slug) return null
+      const { data, error } = await supabase
+        .from('stoaedu_categories')
+        .select('*')
+        .eq('slug', slug)
+        .maybeSingle()
+      if (error) throw error
+      return data as Category | null
+    },
+    enabled: !!slug,
+  })
+}
+```
+
+### 2. `src/lib/queries/courses.ts` — `useCourses`'u GÜNCELLE: opsiyonel filtre kabul etsin
+
+Mevcut `useCourses`'u şu hale getir:
+```ts
+interface CoursesFilter {
+  search?: string
+  categoryId?: string
+}
+
+export function useCourses(filter?: CoursesFilter) {
+  return useQuery({
+    queryKey: ['courses', filter],
+    queryFn: async (): Promise<CourseWithCategory[]> => {
+      let query = supabase
+        .from('stoaedu_courses')
+        .select('*, category:stoaedu_categories(id, slug, name)')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+
+      if (filter?.search) {
+        query = query.ilike('title', `%${filter.search}%`)
+      }
+      if (filter?.categoryId) {
+        query = query.eq('category_id', filter.categoryId)
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+      return data as CourseWithCategory[]
+    },
+  })
+}
+```
+
+`useCourse(slug)` mevcut, dokunma.
+
+### 3. `src/routes/Categories.tsx` — Kategori listesi (mevcut h1'i değiştir)
+
+```tsx
+import { Link } from 'react-router-dom'
+import { useCategories } from '../lib/queries/categories'
+
+export default function Categories() {
+  const { data: categories, isLoading, isError } = useCategories()
+
+  if (isLoading) return <div className="text-center py-12 text-sm text-gray-500">Yükleniyor...</div>
+  if (isError) return <div className="text-center py-12 text-sm text-red-600">Bir hata oluştu.</div>
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Kategoriler</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {categories?.map((cat) => (
+          <Link
+            key={cat.id}
+            to={`/categories/${cat.slug}`}
+            className="border rounded-lg p-6 hover:shadow-md transition"
+          >
+            <h3 className="font-semibold text-lg">{cat.name}</h3>
+            {cat.description && <p className="text-sm text-gray-500 mt-2">{cat.description}</p>}
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+### 4. `src/routes/CategoryDetail.tsx` (yeni dosya)
+
+Kategoriye ait kursları listeler. Courses.tsx'in card layout'unu tekrarlasın (kopyala-paste sorun değil, Faz 2.5'te component'e dönüştürürüz).
+
+```tsx
+import { useParams, Link } from 'react-router-dom'
+import { useCategory } from '../lib/queries/categories'
+import { useCourses } from '../lib/queries/courses'
+
+const formatPrice = (price: number, currency: string) =>
+  new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(price)
+
+export default function CategoryDetail() {
+  const { slug } = useParams<{ slug: string }>()
+  const { data: category, isLoading: catLoading } = useCategory(slug)
+  const { data: courses, isLoading: coursesLoading } = useCourses(
+    category ? { categoryId: category.id } : undefined,
+  )
+
+  if (catLoading) return <div className="text-center py-12 text-sm text-gray-500">Yükleniyor...</div>
+  if (!category) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+        <h1 className="text-2xl font-bold mb-2">Kategori bulunamadı</h1>
+        <Link to="/categories" className="text-sm underline">Tüm kategoriler</Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <Link to="/categories" className="text-xs text-gray-500 hover:text-gray-900">
+        ← Kategoriler
+      </Link>
+      <h1 className="text-2xl font-bold mt-2 mb-6">{category.name}</h1>
+
+      {coursesLoading ? (
+        <div className="text-sm text-gray-500">Yükleniyor...</div>
+      ) : courses && courses.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {courses.map((course) => (
+            <Link
+              key={course.id}
+              to={`/courses/${course.slug}`}
+              className="border rounded-lg overflow-hidden hover:shadow-md transition"
+            >
+              {course.thumbnail_url && (
+                <div className="aspect-video bg-gray-100">
+                  <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="p-4">
+                <h3 className="font-semibold">{course.title}</h3>
+                <p className="text-sm mt-2">{formatPrice(course.price, course.currency)}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500">Bu kategoride henüz kurs yok.</p>
+      )}
+    </div>
+  )
+}
+```
+
+### 5. `src/App.tsx` — `/categories/:slug` route ekle
+
+`<Route path="/categories" element={<Categories />} />` satırının ALTINA ekle:
+```tsx
+<Route path="/categories/:slug" element={<CategoryDetail />} />
+```
+
+Import ekle:
+```tsx
+import CategoryDetail from './routes/CategoryDetail'
+```
+
+### 6. `src/routes/Courses.tsx` — Arama input'u ekle
+
+Üste arama kutusu ekle:
+```tsx
+import { useState } from 'react'
+// ...
+const [search, setSearch] = useState('')
+const { data: courses, isLoading, isError } = useCourses({ search: search.trim() || undefined })
+```
+
+Header altına:
+```tsx
+<input
+  type="text"
+  placeholder="Kurs ara..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="w-full max-w-md border rounded px-3 py-2 text-sm mb-6 outline-none focus:ring-2 focus:ring-gray-900"
+/>
+```
+
+**Çıktı:** Hangi dosyaları oluşturduğunu/güncellediğini listele.
+
+---
+
+## [#024] Coder → Manager | 2026-05-22 19:35 | status: done
+✓ 2 dosya güncellendi:
+
+- `src/lib/queries/courses.ts` — `useCourse(slug)` hook eklendi
+- `src/routes/CourseDetail.tsx` — detay sayfası (loading/error/404 + 2 kolonlu layout)
+
+---
+
+## [#023] Manager → Coder | 2026-05-22 19:30 | status: done
+
+**Brief:** Faz 2.3 — Kurs detay sayfası. `/courses/:slug` route'u dolduracağız.
+
+**Yapılacaklar:**
+
+### 1. `src/lib/queries/courses.ts` — `useCourse(slug)` hook'unu EKLE (mevcut `useCourses` korunsun)
+
+```ts
+export function useCourse(slug: string | undefined) {
+  return useQuery({
+    queryKey: ['course', slug],
+    queryFn: async (): Promise<CourseWithCategory | null> => {
+      if (!slug) return null
+      const { data, error } = await supabase
+        .from('stoaedu_courses')
+        .select('*, category:stoaedu_categories(id, slug, name)')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .maybeSingle()
+      if (error) throw error
+      return data as CourseWithCategory | null
+    },
+    enabled: !!slug,
+  })
+}
+```
+
+### 2. `src/routes/CourseDetail.tsx` — Detay sayfası (mevcut h1'i değiştir)
+
+```tsx
+import { useParams, Link } from 'react-router-dom'
+import { useCourse } from '../lib/queries/courses'
+
+const formatPrice = (price: number, currency: string) =>
+  new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(price)
+
+export default function CourseDetail() {
+  const { slug } = useParams<{ slug: string }>()
+  const { data: course, isLoading, isError } = useCourse(slug)
+
+  if (isLoading) {
+    return <div className="text-center py-12 text-sm text-gray-500">Yükleniyor...</div>
+  }
+
+  if (isError) {
+    return <div className="text-center py-12 text-sm text-red-600">Bir hata oluştu.</div>
+  }
+
+  if (!course) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+        <h1 className="text-2xl font-bold mb-2">Kurs bulunamadı</h1>
+        <p className="text-sm text-gray-500 mb-6">Aradığınız kurs mevcut değil.</p>
+        <Link to="/courses" className="text-sm underline">Tüm kurslara dön</Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+          {course.thumbnail_url && (
+            <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" />
+          )}
+        </div>
+        <div>
+          {course.category && (
+            <Link
+              to={`/categories`}
+              className="text-xs text-gray-500 hover:text-gray-900"
+            >
+              {course.category.name}
+            </Link>
+          )}
+          <h1 className="text-3xl font-bold mt-2 mb-4">{course.title}</h1>
+          <p className="text-gray-700 mb-6 whitespace-pre-line">{course.description}</p>
+          <div className="text-2xl font-semibold mb-6">
+            {formatPrice(course.price, course.currency)}
+          </div>
+          <button
+            type="button"
+            className="w-full bg-gray-900 text-white py-3 rounded text-sm font-medium hover:bg-gray-700"
+          >
+            Sepete Ekle
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+**Notlar:**
+- "Sepete Ekle" butonu şimdilik sadece UI — Faz 3'te bağlanacak
+- Kategori linki şimdilik `/categories`'e gider (slug-bazlı kategori sayfası Faz 2.4'te)
+- `maybeSingle()` kullan, kurs yoksa null döner (404 ekran)
+
+**Çıktı:** Hangi dosyaları güncelledin/oluşturdun listele.
+
+---
+
 ## [#022] Coder → Manager | 2026-05-22 19:10 | status: done
 ✓ 5 dosya oluşturuldu/güncellendi:
 
