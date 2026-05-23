@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCourses } from '../lib/queries/courses'
 import { useCategories } from '../lib/queries/categories'
-
-const formatPrice = (price: number, currency: string) =>
-  new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(price)
+import { formatPrice } from '../lib/format'
 
 export default function Courses() {
   const [search, setSearch] = useState('')

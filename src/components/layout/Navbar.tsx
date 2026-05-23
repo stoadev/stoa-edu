@@ -17,6 +17,7 @@ import {
   NavigationMenuTrigger,
 } from '../ui/navigation-menu'
 import { Button } from '../ui/Button'
+import { formatPrice } from '../../lib/format'
 
 const categoryIcons: Record<string, typeof Code> = {
   'web-gelistirme': Code,
@@ -24,9 +25,6 @@ const categoryIcons: Record<string, typeof Code> = {
   tasarim: Palette,
   'veri-bilimi': BarChart3,
 }
-
-const formatPrice = (price: number, currency: string) =>
-  new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(price)
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
@@ -163,7 +161,7 @@ export default function Navbar() {
                   <NavLink
                     to="/about"
                     className={({ isActive }) =>
-                      cn('rounded-md px-4 py-2 text-base font-normal hover:bg-gray-100', isActive && 'bg-gray-100 text-gray-900')
+                      cn('inline-flex h-10 items-center rounded-md px-4 py-2 text-base font-normal transition-colors hover:bg-gray-100 hover:text-gray-900', isActive && 'bg-gray-100 text-gray-900')
                     }
                   >
                     Hakkımızda
@@ -175,7 +173,7 @@ export default function Navbar() {
                   <NavLink
                     to="/contact"
                     className={({ isActive }) =>
-                      cn('rounded-md px-4 py-2 text-base font-normal hover:bg-gray-100', isActive && 'bg-gray-100 text-gray-900')
+                      cn('inline-flex h-10 items-center rounded-md px-4 py-2 text-base font-normal transition-colors hover:bg-gray-100 hover:text-gray-900', isActive && 'bg-gray-100 text-gray-900')
                     }
                   >
                     İletişim

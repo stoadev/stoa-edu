@@ -1,8 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import { useCourse } from '../lib/queries/courses'
-
-const formatPrice = (price: number, currency: string) =>
-  new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(price)
+import { formatPrice } from '../lib/format'
 
 export default function CourseDetail() {
   const { slug } = useParams<{ slug: string }>()

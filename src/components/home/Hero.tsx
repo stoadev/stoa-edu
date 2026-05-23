@@ -1,6 +1,8 @@
 import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Marquee } from '../ui/Marquee'
+import { ImageSlider } from '../ui/ImageSlider'
+import { authSlides } from '../../lib/images'
 
 const avatars = [
   'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&auto=format',
@@ -25,16 +27,7 @@ export function Hero() {
       <div className="grid grid-cols-1 md:grid-cols-12 md:min-h-[calc(100vh-64px)]">
         {/* Sol: görsel */}
         <div className="h-64 w-full md:col-span-6 md:h-full">
-          <img
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&h=1200&fit=crop&auto=format"
-            alt="Öğrenciler"
-            width={1600}
-            height={1200}
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
+          <ImageSlider images={authSlides} />
         </div>
 
         {/* Sağ: içerik */}
