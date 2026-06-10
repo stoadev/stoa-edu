@@ -36,6 +36,16 @@ Giriş sayfasında aşağıdaki bilgilerle test edebilirsiniz:
 
 Yeni hesap oluşturmak da çalışır — veriler yalnızca oturum süresince bellekte tutulur.
 
+## Sepet
+
+Sepet verisi `localStorage`'da tutulur — sayfa yenilense de korunur. Giriş gerektirmez.
+
+## Görsel Slider
+
+`ImageSlider`, ana sayfa (Hero) ile giriş/kayıt sayfalarında (AuthLayout) aynı görsel setini gösterir.
+Sayfalar arası geçişte slider state'i (aktif görsel + geçen süre) paylaşılır, böylece geçiş kaldığı
+yerden devam eder, baştan başlamaz.
+
 ## Proje Yapısı
 
 ```
@@ -45,7 +55,7 @@ src/
     home/        # Hero, öne çıkan kurslar
     layout/      # Navbar, Footer, Layout
     ui/          # Button, Input, ImageSlider, vb.
-  contexts/      # AuthContext (mock auth)
+  contexts/      # AuthContext (mock auth), CartContext (localStorage)
   hooks/         # useScroll
   lib/
     queries/     # TanStack Query hook'ları (categories, courses)
@@ -56,6 +66,20 @@ src/
   routes/        # Sayfa bileşenleri
   types/         # TypeScript tip tanımları
 ```
+
+## Sayfalar
+
+| Yol | Açıklama |
+|-----|----------|
+| `/` | Ana sayfa |
+| `/courses` | Kurs listesi |
+| `/courses/:slug` | Kurs detayı |
+| `/categories` | Kategoriler |
+| `/cart` | Sepet |
+| `/about` | Hakkımızda |
+| `/contact` | İletişim |
+| `/login`, `/register` | Kimlik doğrulama |
+| `/checkout` | Ödeme (giriş gerektirir) |
 
 ## Roller
 

@@ -7,8 +7,12 @@ interface ImageSliderProps {
   className?: string
 }
 
+let sharedActiveIndex = 0
+let sharedElapsed = 0
+let sharedTickStart = Date.now()
+
 export function ImageSlider({ images, interval = 5000, className }: ImageSliderProps) {
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [activeIndex, setActiveIndex] = useState(sharedActiveIndex)
 
   useEffect(() => {
     if (images.length <= 1) return
@@ -16,12 +20,39 @@ export function ImageSlider({ images, interval = 5000, className }: ImageSliderP
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduceMotion) return
 
-    const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % images.length)
-    }, interval)
+    sharedTickStart = Date.now()
+    const remaining = Math.max(interval - sharedElapsed, 0)
 
-    return () => clearInterval(timer)
-  }, [images.length, interval, activeIndex])
+    const advance = () => {
+      sharedActiveIndex = (sharedActiveIndex + 1) % images.length
+      sharedElapsed = 0
+      sharedTickStart = Date.now()
+      setActiveIndex(sharedActiveIndex)
+    }
+
+    const timeout = setTimeout(() => {
+      advance()
+    }, remaining)
+
+    let timer: ReturnType<typeof setInterval> | undefined
+    const intervalTimeout = setTimeout(() => {
+      timer = setInterval(advance, interval)
+    }, remaining)
+
+    return () => {
+      clearTimeout(timeout)
+      clearTimeout(intervalTimeout)
+      if (timer) clearInterval(timer)
+      sharedElapsed += Date.now() - sharedTickStart
+    }
+  }, [images.length, interval])
+
+  function goTo(i: number) {
+    sharedActiveIndex = i
+    sharedElapsed = 0
+    sharedTickStart = Date.now()
+    setActiveIndex(i)
+  }
 
   return (
     <div className={cn('relative h-full w-full overflow-hidden', className)}>
@@ -47,7 +78,7 @@ export function ImageSlider({ images, interval = 5000, className }: ImageSliderP
             <button
               key={i}
               type="button"
-              onClick={() => setActiveIndex(i)}
+              onClick={() => goTo(i)}
               aria-label={`${i + 1}. görsele git`}
               aria-current={i === activeIndex}
               className={cn(
