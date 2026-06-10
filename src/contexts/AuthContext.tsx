@@ -1,11 +1,14 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { User } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
 import type { Profile } from '../types/profile'
 
+interface MockUser {
+  id: string
+  email: string
+}
+
 interface AuthContextValue {
-  user: User | null
+  user: MockUser | null
   profile: Profile | null
   loading: boolean
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>
@@ -15,61 +18,55 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data } = await supabase
-    .from('stoaedu_profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
-  return data ?? null
-}
+const MOCK_USERS: Array<{ email: string; password: string; fullName: string }> = [
+  { email: 'demo@stoaedu.com', password: 'demo123', fullName: 'Demo Kullanıcı' },
+]
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<MockUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        setProfile(await fetchProfile(session.user.id))
-      }
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile)
-      } else {
-        setProfile(null)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  async function signUp(email: string, password: string, fullName: string) {
-    const { error } = await supabase.auth.signUp({
+  async function signUp(email: string, _password: string, fullName: string) {
+    const newUser: MockUser = { id: crypto.randomUUID(), email }
+    const newProfile: Profile = {
+      id: newUser.id,
       email,
-      password,
-      options: { data: { app: 'stoaedu', full_name: fullName } },
-    })
-    return { error }
+      full_name: fullName,
+      role: 'student',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    setUser(newUser)
+    setProfile(newProfile)
+    return { error: null }
   }
 
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error }
+    const found = MOCK_USERS.find((u) => u.email === email && u.password === password)
+    if (!found) {
+      return { error: new Error('E-posta veya şifre hatalı.') }
+    }
+    const mockUser: MockUser = { id: '1', email: found.email }
+    const mockProfile: Profile = {
+      id: '1',
+      email: found.email,
+      full_name: found.fullName,
+      role: 'student',
+      created_at: '2024-01-01',
+      updated_at: '2024-01-01',
+    }
+    setUser(mockUser)
+    setProfile(mockProfile)
+    return { error: null }
   }
 
   async function signOut() {
-    await supabase.auth.signOut()
+    setUser(null)
+    setProfile(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading: false, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )

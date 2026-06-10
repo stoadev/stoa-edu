@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../supabase'
 import type { CourseWithCategory } from '../../types/course'
+import { mockCourses } from '../mockData'
 
 interface CoursesFilter {
   search?: string
@@ -10,23 +10,16 @@ interface CoursesFilter {
 export function useCourses(filter?: CoursesFilter) {
   return useQuery({
     queryKey: ['courses', filter],
-    queryFn: async (): Promise<CourseWithCategory[]> => {
-      let query = supabase
-        .from('stoaedu_courses')
-        .select('*, category:stoaedu_categories(id, slug, name)')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false })
-
+    queryFn: (): CourseWithCategory[] => {
+      let result = mockCourses.filter((c) => c.is_published)
       if (filter?.search) {
-        query = query.ilike('title', `%${filter.search}%`)
+        const q = filter.search.toLowerCase()
+        result = result.filter((c) => c.title.toLowerCase().includes(q))
       }
       if (filter?.categoryId) {
-        query = query.eq('category_id', filter.categoryId)
+        result = result.filter((c) => c.category_id === filter.categoryId)
       }
-
-      const { data, error } = await query
-      if (error) throw error
-      return data as CourseWithCategory[]
+      return result
     },
   })
 }
@@ -34,16 +27,9 @@ export function useCourses(filter?: CoursesFilter) {
 export function useCourse(slug: string | undefined) {
   return useQuery({
     queryKey: ['course', slug],
-    queryFn: async (): Promise<CourseWithCategory | null> => {
+    queryFn: (): CourseWithCategory | null => {
       if (!slug) return null
-      const { data, error } = await supabase
-        .from('stoaedu_courses')
-        .select('*, category:stoaedu_categories(id, slug, name)')
-        .eq('slug', slug)
-        .eq('is_published', true)
-        .maybeSingle()
-      if (error) throw error
-      return data as CourseWithCategory | null
+      return mockCourses.find((c) => c.slug === slug && c.is_published) ?? null
     },
     enabled: !!slug,
   })
