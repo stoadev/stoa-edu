@@ -21,7 +21,7 @@ export function ImageSlider({ images, interval = 5000, className }: ImageSliderP
     }, interval)
 
     return () => clearInterval(timer)
-  }, [images.length, interval])
+  }, [images.length, interval, activeIndex])
 
   return (
     <div className={cn('relative h-full w-full overflow-hidden', className)}>
@@ -40,6 +40,24 @@ export function ImageSlider({ images, interval = 5000, className }: ImageSliderP
           )}
         />
       ))}
+
+      {images.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setActiveIndex(i)}
+              aria-label={`${i + 1}. görsele git`}
+              aria-current={i === activeIndex}
+              className={cn(
+                'h-2.5 rounded-full transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2',
+                i === activeIndex ? 'w-8 bg-white' : 'w-2.5 bg-white/50 hover:bg-white/80',
+              )}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
