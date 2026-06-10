@@ -18,6 +18,7 @@ import {
 } from '../ui/navigation-menu'
 import { Button } from '../ui/Button'
 import { formatPrice } from '../../lib/format'
+import { useCart } from '../../contexts/CartContext'
 
 const categoryIcons: Record<string, typeof Code> = {
   'web-gelistirme': Code,
@@ -30,6 +31,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const scrolled = useScroll(10)
   const { user, profile, loading, signOut } = useAuth()
+  const { items } = useCart()
   const { data: categories } = useCategories()
   const { data: courses } = useCourses()
   const featured = courses?.slice(0, 2) ?? []
@@ -186,8 +188,13 @@ export default function Navbar() {
 
         {/* Sağ: sepet + auth */}
         <div className="hidden items-center gap-3 md:flex">
-          <Link to="/cart" aria-label="Sepet" className="rounded-md p-2 hover:bg-gray-100">
+          <Link to="/cart" aria-label="Sepet" className="relative rounded-md p-2 hover:bg-gray-100">
             <ShoppingCart className="h-5 w-5 text-gray-700" />
+            {items.length > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white">
+                {items.length > 9 ? '9+' : items.length}
+              </span>
+            )}
           </Link>
           {!loading &&
             (user ? (

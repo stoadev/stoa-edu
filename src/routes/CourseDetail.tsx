@@ -1,9 +1,12 @@
 import { useParams, Link } from 'react-router-dom'
 import { useCourse } from '../lib/queries/courses'
 import { formatPrice } from '../lib/format'
+import { useCart } from '../contexts/CartContext'
+import { Button } from '../components/ui/Button'
 
 export default function CourseDetail() {
   const { slug } = useParams<{ slug: string }>()
+  const { addItem, isInCart } = useCart()
   const { data: course, isLoading, isError } = useCourse(slug)
 
   if (isLoading) {
@@ -53,12 +56,15 @@ export default function CourseDetail() {
           <div className="text-2xl font-semibold mb-6">
             {formatPrice(course.price, course.currency)}
           </div>
-          <button
-            type="button"
-            className="w-full bg-gray-900 text-white py-3 rounded text-sm font-medium hover:bg-gray-700"
-          >
-            Sepete Ekle
-          </button>
+          {isInCart(course.id) ? (
+            <Link to="/cart">
+              <Button variant="outline" className="w-full">Sepette Görüntüle</Button>
+            </Link>
+          ) : (
+            <Button variant="primary" className="w-full" onClick={() => addItem(course)}>
+              Sepete Ekle
+            </Button>
+          )}
         </div>
       </div>
     </div>

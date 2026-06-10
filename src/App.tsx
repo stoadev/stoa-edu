@@ -10,6 +10,8 @@ import Cart from './routes/Cart'
 import Checkout from './routes/Checkout'
 import Login from './routes/Login'
 import Register from './routes/Register'
+import About from './routes/About'
+import Contact from './routes/Contact'
 import NotFound from './routes/NotFound'
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
           <Route path="/courses/:slug" element={<CourseDetail />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
 
           <Route element={<RedirectIfAuthenticated />}>
             <Route path="/login" element={<Login />} />
