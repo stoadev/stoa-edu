@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCourses } from '../lib/queries/courses'
 import { useCategories } from '../lib/queries/categories'
-import { formatPrice } from '../lib/format'
 
 export default function Courses() {
   const [search, setSearch] = useState('')
@@ -85,9 +84,6 @@ export default function Courses() {
                       <p className="text-xs text-gray-500">{course.category.name}</p>
                     )}
                     <h3 className="font-semibold mt-1">{course.title}</h3>
-                    <p className="text-sm mt-2 font-medium">
-                      {formatPrice(course.price, course.currency)}
-                    </p>
                   </div>
                 </Link>
               ))}

@@ -17,7 +17,6 @@ import {
   NavigationMenuTrigger,
 } from '../ui/navigation-menu'
 import { Button } from '../ui/Button'
-import { formatPrice } from '../../lib/format'
 import { useCart } from '../../contexts/CartContext'
 
 const categoryIcons: Record<string, typeof Code> = {
@@ -134,9 +133,6 @@ export default function Navbar() {
                                 <div className="flex flex-col">
                                   <span className="text-sm font-medium text-gray-900">
                                     {course.title}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    {formatPrice(course.price, course.currency)}
                                   </span>
                                 </div>
                               </Link>

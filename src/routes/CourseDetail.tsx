@@ -1,6 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
 import { useCourse } from '../lib/queries/courses'
-import { formatPrice } from '../lib/format'
 import { useCart } from '../contexts/CartContext'
 import { Button } from '../components/ui/Button'
 
@@ -53,9 +52,6 @@ export default function CourseDetail() {
           )}
           <h1 className="text-3xl font-bold mt-2 mb-4">{course.title}</h1>
           <p className="text-gray-700 mb-6 whitespace-pre-line">{course.description}</p>
-          <div className="text-2xl font-semibold mb-6">
-            {formatPrice(course.price, course.currency)}
-          </div>
           {isInCart(course.id) ? (
             <Link to="/cart">
               <Button variant="outline" className="w-full">Sepette Görüntüle</Button>

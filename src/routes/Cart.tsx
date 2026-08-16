@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom'
 import { Trash2, ShoppingCart } from 'lucide-react'
 import { useCart } from '../contexts/CartContext'
-import { formatPrice } from '../lib/format'
 import { Button } from '../components/ui/Button'
 
 export default function Cart() {
-  const { items, removeItem, total } = useCart()
+  const { items, removeItem } = useCart()
 
   if (items.length === 0) {
     return (
@@ -54,9 +53,6 @@ export default function Cart() {
                 )}
               </div>
               <div className="flex flex-col items-end gap-2 shrink-0">
-                <span className="text-sm font-semibold text-gray-900">
-                  {formatPrice(course.price, course.currency)}
-                </span>
                 <button
                   type="button"
                   onClick={() => removeItem(course.id)}
@@ -73,14 +69,8 @@ export default function Cart() {
         <div className="md:col-span-1">
           <div className="rounded-xl border border-gray-200 bg-white p-6 sticky top-24">
             <h2 className="text-base font-semibold text-gray-900 mb-4">Sipariş Özeti</h2>
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
+            <div className="text-sm text-gray-600 mb-6">
               <span>{items.length} kurs</span>
-              <span>{formatPrice(total, 'TRY')}</span>
-            </div>
-            <div className="border-t border-gray-100 my-4" />
-            <div className="flex justify-between font-semibold text-gray-900 mb-6">
-              <span>Toplam</span>
-              <span>{formatPrice(total, 'TRY')}</span>
             </div>
             <Link to="/checkout">
               <Button variant="primary" className="w-full">Ödemeye Geç</Button>
